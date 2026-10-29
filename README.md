@@ -207,7 +207,7 @@ streamlit run app.py                     # 打开 http://localhost:8501
 
 ```
 启动.bat               双击即启动（自动装依赖 + 下模型 + 开浏览器）
-app.py                 入口（三个 tab）
+app.py                 入口（两个 tab：流程编排 / 问答与对比）
 config.py              供应商预设 + 五种切片策略的元数据 + 模块文案
 .streamlit/config.toml 亮/暗两套主题色 —— 全项目唯一的色值定义点
 core/
@@ -226,9 +226,9 @@ ui/
   flow_component/      画布前端组件（index.html，纯 HTML/JS，无构建步骤）
 data/
   samples/             11 份内置语料（深信大校园指南）
-docs/screenshots/      README 用的界面截图
   models/              本地向量模型缓存（首次自动下载，可删）
   storage/             索引持久化（重建即可，可删）
+docs/screenshots/      README 用的界面截图
 ```
 
 **教学向的设计选择**：`config.py` 里集中存放所有"解释性文案"，业务代码里不夹带；
