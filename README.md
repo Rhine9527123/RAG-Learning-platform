@@ -57,28 +57,50 @@ cd RAG-Learning-platform
 
 > 想换成本地别的目录名也行：`git clone <地址> RAG教学教具`，然后 `cd RAG教学教具`。
 
-### 2. 双击 `启动.bat`
+### 2. 启动前端（三种方式，任选一种）
+
+#### 方式 A：双击 `启动.bat`（Windows 最省事）
 
 首次启动会自动做完所有准备工作：
 
 - 创建虚拟环境 `.venv`，用**清华镜像**装依赖（约 2 分钟）
 - 从 **hf-mirror.com** 下载本地向量模型 `bge-small-zh-v1.5`（90MB，约 40 秒）
-- 打开浏览器
+- 打开浏览器 `http://localhost:8501`
 
-之后再启动就是秒开。命令行用户也可以直接跑 `.\run.ps1`。
+之后再启动就是秒开。
 
 > 唯一前提：本机装了 Python 3.10+。`.bat` 会自动检测，没装会给出下载链接。
 
-### 2'. 或者手动装（macOS / Linux / 想自己掌控每一步）
+#### 方式 B：命令行启动（Windows PowerShell，适合要改代码的人）
 
-```bash
-python -m venv .venv                     # 1. 建虚拟环境
-source .venv/bin/activate                # Windows 用：.venv\Scripts\activate
-pip install -r requirements.txt          # 国内加 -i https://pypi.tuna.tsinghua.edu.cn/simple
-streamlit run app.py                     # 打开 http://localhost:8501
+```powershell
+cd RAG-Learning-platform
+
+# 仅首次：建虚拟环境 + 装依赖（已建过可跳过）
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 每次启动前端
+.\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-首次建库会自动从 `hf-mirror.com` 下载本地向量模型（约 90MB，只此一次），之后完全离线可用。
+也可以直接跑 `.\run.ps1`（与双击 `启动.bat` 等价）。
+
+#### 方式 C：命令行启动（macOS / Linux）
+
+```bash
+cd RAG-Learning-platform
+
+# 仅首次：建虚拟环境 + 装依赖
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 每次启动前端
+streamlit run app.py
+```
+
+默认监听 `8501`，浏览器会自动打开 `http://localhost:8501`。首次建库会自动从 `hf-mirror.com` 下载本地向量模型（约 90MB，只此一次），之后完全离线可用。
 
 ### 3. 在浏览器里粘贴 API Key
 
@@ -90,6 +112,24 @@ streamlit run app.py                     # 打开 http://localhost:8501
 
 > **一个 Key 都没有也能玩。** 向量模型跑在本机，所以建库和检索完全不需要 Key，
 > 只有"生成答案"那一步才需要。五种切片、四个检索模块照样能全部玩一遍。
+
+### 附：常用启动命令
+
+```powershell
+# 8501 被占用时换端口
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8502
+
+# 不自动打开浏览器（服务器 / 远程桌面）
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.headless true
+
+# 只看当前版本，确认环境装好了
+.\.venv\Scripts\python.exe -m streamlit version
+```
+
+macOS / Linux 把 `.\.venv\Scripts\python.exe -m streamlit` 换成 `streamlit` 即可。
+
+> 改完 `config.py`、`ui/theme.py`、`ui/tab_qa.py` 这类被 import 的模块，Streamlit 的热重载不一定生效，**必须 Ctrl+C 停掉再重跑启动命令**，否则看到的是旧页面。
+> 浏览器端如果样式没变，按 `Ctrl+F5` 强刷一次（CSS 会被缓存）。
 
 ---
 

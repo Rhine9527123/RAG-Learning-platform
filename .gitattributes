@@ -1,0 +1,20 @@
+# 行尾策略：按文件类型钉死，不依赖每台机器的 core.autocrlf 配置
+#
+# Windows 脚本必须 CRLF + UTF-8 BOM：
+#   PowerShell 5.1 对无 BOM 脚本按系统 GBK 读取，中文会导致 here-string 结构崩坏；
+#   .bat 在纯 LF 下偶发截断。这里统一由 git 在检出时转换为 CRLF。
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# 源码与文本统一 LF（跨平台一致，Python/Markdown 均不敏感）
+*.py   text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.toml text eol=lf
+*.html text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
