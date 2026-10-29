@@ -1,0 +1,26 @@
+# ---- RAG 教学教具依赖（全部走 PyPI 镜像安装，见 setup.ps1）----
+
+# LlamaIndex 核心与官方集成
+llama-index-core>=0.14,<0.15
+# 注意：必须用 openai_like 而不是 llms-openai 直接构造 LLM。
+# 后者会拿模型名去查 OpenAI 官方白名单，deepseek-chat / qwen-plus / glm-4-flash
+# 这些全都不在名单里，会直接抛 "Unknown model"。详见 README「第 5 个坑」。
+llama-index-llms-openai-like>=0.8.0
+llama-index-embeddings-openai>=0.3.0
+llama-index-retrievers-bm25>=0.5.0
+
+# 本地向量模型：onnxruntime 后端，不需要 torch / GPU
+# 模型文件走 hf-mirror.com 镜像下载，一次下完永久离线可用
+llama-index-embeddings-fastembed>=0.7.0
+fastembed>=0.9.0
+hf_transfer>=0.1.9
+
+# ---- 界面 ----
+streamlit>=1.50.0
+
+# ---- 文档解析 ----
+pypdf>=5.0.0
+python-docx>=1.1.0
+
+# ---- 中文分词（BM25 检索必需，见 core/retrievers.py 注释）----
+jieba>=0.42.1

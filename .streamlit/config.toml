@@ -1,0 +1,34 @@
+# Streamlit 主题配置 —— 这里是全项目**唯一**的色值定义点。
+# CSS 里不出现 #hex，一律引用 Streamlit 暴露的运行时变量
+# (--primary-color / --text-color / --secondary-background-color ...)，
+# 因此切换亮/暗色时自定义样式会自动跟着变。
+#
+# 暗色不是"把亮色反过来"：主色降饱和提亮（#2B5CE6 -> #7A9BF5），
+# 背景用近黑的冷灰而不是纯黑，边框靠色阶而不是阴影来分层（见 ui/theme.py）。
+
+[theme]
+font = "sans serif"
+primaryColor = "#2B5CE6"
+linkColor = "#2B5CE6"
+baseRadius = "8px"
+codeFont = "monospace"
+
+[theme.light]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F6F7F9"
+textColor = "#14171F"
+borderColor = "#E4E7EC"
+dataframeBorderColor = "#E4E7EC"
+dataframeHeaderBackgroundColor = "#F6F7F9"
+codeBackgroundColor = "#F6F7F9"
+codeTextColor = "#14171F"
+
+[theme.dark]
+backgroundColor = "#0E1014"
+secondaryBackgroundColor = "#171A20"
+textColor = "#E9ECF1"
+borderColor = "#262B34"
+dataframeBorderColor = "#262B34"
+dataframeHeaderBackgroundColor = "#171A20"
+codeBackgroundColor = "#171A20"
+codeTextColor = "#E9ECF1"
