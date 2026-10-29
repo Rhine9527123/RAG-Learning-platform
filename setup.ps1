@@ -23,6 +23,25 @@ function Show-ErrTail([int]$n) {
 Write-Host "==> 当前目录：$PSScriptRoot"
 
 # ---------------------------------------------------------------
+# 前置检查：确认手上不是旧版代码
+# ---------------------------------------------------------------
+# 旧版 requirements.txt 依赖 llama-index-embeddings-fastembed，
+# 而这个包只发布到 Python <3.13。用户忘记更新代码就直接重装时，
+# 会看到一堆「找不到包」的报错，却以为是环境问题 —— 这里直接说清原因。
+$reqFile = Join-Path $PSScriptRoot "requirements.txt"
+if ((Test-Path -LiteralPath $reqFile) -and
+    (Select-String -LiteralPath $reqFile -Pattern "llama-index-embeddings-fastembed" -Quiet)) {
+    Write-Host ""
+    Write-Host "  [X] 这是旧版代码：requirements.txt 里还写着 llama-index-embeddings-fastembed。" -ForegroundColor Red
+    Write-Host "      该包最高只发布到 Python 3.12，在 3.13 / 3.14 上必然装不上，继续装没有意义。" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "      先更新代码，再装依赖：" -ForegroundColor Yellow
+    Write-Host "      双击 更新.bat（或在仓库目录执行 git pull），然后重新双击 安装依赖.bat。" -ForegroundColor Yellow
+    Write-Host ""
+    exit 1
+}
+
+# ---------------------------------------------------------------
 # 挑一个能用的 Python 解释器
 # ---------------------------------------------------------------
 # 为什么必须挑：onnxruntime 和 streamlit 都要求 >= 3.11；

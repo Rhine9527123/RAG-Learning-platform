@@ -118,6 +118,27 @@ streamlit run app.py
 
 默认监听 `8501`，浏览器会自动打开 `http://localhost:8501`。首次建库会自动从 `hf-mirror.com` 下载本地向量模型（约 90MB，只此一次），之后完全离线可用。
 
+#### 已经装过一次旧版本，怎么更新
+
+如果你之前 clone 过，再执行 `git clone` 会报这句：
+
+```
+fatal: destination path 'RAG-Learning-platform' already exists and is not an empty directory.
+```
+
+这不是出错，是**目录里已经有一份代码了** —— 此时要做的是在原目录里更新，而不是重新 clone：
+
+```powershell
+cd RAG-Learning-platform
+git pull
+```
+
+更新完再双击 `安装依赖.bat`。更省事的做法：直接双击仓库里的 `更新.bat`，它会把
+`git pull` 和依赖安装一次做完。
+
+判断自己手上是不是最新代码的最快方式，看 `core` 目录里有没有 `local_embed.py`：
+有就是新版，没有就是旧版（旧版在 Python 3.13/3.14 上装不上依赖）。
+
 ### 3. 在浏览器里粘贴 API Key
 
 浏览器会自动打开 `http://localhost:8501`。左侧**只有一个输入框**：
@@ -285,6 +306,7 @@ macOS / Linux 把 `.\.venv\Scripts\python.exe -m streamlit` 换成 `streamlit` �
 ```
 启动.bat               双击即启动（自动装依赖 + 下模型 + 开浏览器）
 安装依赖.bat           只装依赖（6 个镜像自动回退 + 装完自检），双击即可
+更新.bat               拉最新代码 + 重装依赖（已经 clone 过的人用这个，不要重新 clone）
 app.py                 入口（两个 tab：流程编排 / 问答与对比）
 config.py              供应商预设 + 五种切片策略的元数据 + 模块文案
 .streamlit/config.toml 亮/暗两套主题色 —— 全项目唯一的色值定义点
