@@ -1,4 +1,5 @@
-# 一键启动
+﻿# 一键启动
+# 注意：本文件必须保存为 UTF-8 with BOM（Windows PowerShell 5.1 无 BOM 时按 GBK 读取，中文会导致解析崩溃）
 # 用法：powershell -ExecutionPolicy Bypass -File .\run.ps1
 
 $ErrorActionPreference = "Stop"
