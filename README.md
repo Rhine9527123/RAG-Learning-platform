@@ -71,18 +71,26 @@ cd RAG-Learning-platform
 
 > 唯一前提：本机装了 Python 3.10+。`.bat` 会自动检测，没装会给出下载链接。
 
-#### 方式 B：命令行启动（Windows PowerShell，适合要改代码的人）
+#### 方式 B：命令行启动（Windows，适合要改代码的人）
+
+在 **PowerShell** 里依次执行（第 2、3 行只在首次需要）：
 
 ```powershell
 cd RAG-Learning-platform
-
-# 仅首次：建虚拟环境 + 装依赖（已建过可跳过）
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-# 每次启动前端
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
+
+在 **CMD（传统黑框）** 里命令完全一样，但**不要把 `#` 开头的注释一起粘进去**——CMD 不认 `#`，会报「'#' 不是内部或外部命令」。
+
+> 镜像超时怎么办：把 `-i` 后面换成下面任意一个，或直接双击 `安装依赖.bat`（它会按同样顺序自动依次尝试，某个源超时就换下一个，装完还会自检依赖能否导入）。
+>
+> - 阿里云 `https://mirrors.aliyun.com/pypi/simple`
+> - 腾讯云 `https://mirrors.cloud.tencent.com/pypi/simple`
+> - 华为云 `https://repo.huaweicloud.com/repository/pypi/simple`
+> - 中科大 `https://mirrors.ustc.edu.cn/pypi/simple`
+> - 官方 `https://pypi.org/simple`
 
 也可以直接跑 `.\run.ps1`（与双击 `启动.bat` 等价）。
 
@@ -90,15 +98,13 @@ python -m venv .venv
 
 ```bash
 cd RAG-Learning-platform
-
-# 仅首次：建虚拟环境 + 装依赖
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-# 每次启动前端
 streamlit run app.py
 ```
+
+第 2 到 4 行只在首次需要，之后每次只要最后一行。
 
 默认监听 `8501`，浏览器会自动打开 `http://localhost:8501`。首次建库会自动从 `hf-mirror.com` 下载本地向量模型（约 90MB，只此一次），之后完全离线可用。
 
@@ -115,16 +121,17 @@ streamlit run app.py
 
 ### 附：常用启动命令
 
+下面三条不含注释，PowerShell 和 CMD 里都能直接粘：
+
 ```powershell
-# 8501 被占用时换端口
 .\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8502
-
-# 不自动打开浏览器（服务器 / 远程桌面）
 .\.venv\Scripts\python.exe -m streamlit run app.py --server.headless true
-
-# 只看当前版本，确认环境装好了
 .\.venv\Scripts\python.exe -m streamlit version
 ```
+
+- 第一行：8501 被占用时换端口
+- 第二行：不自动打开浏览器（服务器 / 远程桌面）
+- 第三行：确认环境装好了
 
 macOS / Linux 把 `.\.venv\Scripts\python.exe -m streamlit` 换成 `streamlit` 即可。
 
@@ -267,6 +274,7 @@ macOS / Linux 把 `.\.venv\Scripts\python.exe -m streamlit` 换成 `streamlit` �
 
 ```
 启动.bat               双击即启动（自动装依赖 + 下模型 + 开浏览器）
+安装依赖.bat           只装依赖（6 个镜像自动回退 + 装完自检），双击即可
 app.py                 入口（两个 tab：流程编排 / 问答与对比）
 config.py              供应商预设 + 五种切片策略的元数据 + 模块文案
 .streamlit/config.toml 亮/暗两套主题色 —— 全项目唯一的色值定义点
