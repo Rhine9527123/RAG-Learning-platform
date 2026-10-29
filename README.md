@@ -48,6 +48,11 @@
 
 ## 三步开始用
 
+> **环境要求：Python 3.11 / 3.12 / 3.13（推荐 3.12）。**
+> 3.10 及以下装不上（`onnxruntime`、`streamlit` 都要求 3.11+），3.14 目前依赖还凑不齐。
+> 本机装了多个版本不用手动切：`setup.ps1` 会用 `py` 启动器把所有版本列出来，
+> 自动挑一个 3.11~3.13 的来建虚拟环境，优先 3.12。
+
 ### 1. 克隆仓库
 
 ```powershell
@@ -69,7 +74,8 @@ cd RAG-Learning-platform
 
 之后再启动就是秒开。
 
-> 唯一前提：本机装了 Python 3.10+。`.bat` 会自动检测，没装会给出下载链接。
+> 唯一前提：本机装了 Python 3.11~3.13。`.bat` 会检查版本，`setup.ps1` 会自动选解释器；
+> 一个都用不了时会直接告诉你要装哪个版本、给下载地址。
 
 #### 方式 B：命令行启动（Windows，适合要改代码的人）
 
@@ -83,6 +89,10 @@ python -m venv .venv
 ```
 
 在 **CMD（传统黑框）** 里命令完全一样，但**不要把 `#` 开头的注释一起粘进去**——CMD 不认 `#`，会报「'#' 不是内部或外部命令」。
+
+> 第 2 行要求 `python` 本身是 3.11~3.13。如果你的 `python` 是 3.14（或 3.10），
+> 把它换成显式版本，其它行不用改：`py -3.12 -m venv .venv`。
+> 判断当前是几：`python -V`。懒人就别手敲了，直接双击 `安装依赖.bat`，它会自动挑版本。
 
 > 镜像超时怎么办：把 `-i` 后面换成下面任意一个，或直接双击 `安装依赖.bat`（它会按同样顺序自动依次尝试，某个源超时就换下一个，装完还会自检依赖能否导入）。
 >
@@ -282,6 +292,7 @@ core/
   chunking.py          五种切片策略（+ 中文分句器）
   ingest.py            文档解析（txt/md/pdf/docx）
   llm.py               OpenAI 兼容模型工厂 + 连通性自检
+  local_embed.py       本地向量模型（fastembed 包一层 BaseEmbedding，不依赖官方集成包）
   kb.py                建索引 / 持久化 / 加载
   retrievers.py        四个可插拔检索模块 + 检索过程追踪
   evaluate.py          检索质量诊断（理想答案 + 三个分数 + 参数建议）
@@ -388,3 +399,19 @@ ValueError: Unknown model 'deepseek-chat'. Please provide a valid OpenAI model n
 **API Key 存在哪？**
 `data/settings.json`（已在 `.gitignore` 里）。明文存在你自己机器上，不会上传。
 对话请求直接发往你选的厂商，向量计算完全在本机。
+
+**装依赖时报 `Could not find a version that satisfies the requirement llama-index-embeddings-fastembed (from versions: 0.1.2)`？**
+Python 版本太新。这个包最新版在 PyPI 上写的是 `Requires-Python >=3.10,<3.13`，
+到了 3.13 / 3.14，pip 能看到的只剩 0.1.2，装上去又和 `llama-index-core` 0.14 打架。
+
+现在的版本已经不再依赖它了：本项目的本地向量模型是 `core/local_embed.py` 自己封的
+（只依赖 `fastembed` 本体，没有版本上限），3.13 也能装。处理步骤：
+
+1. 删掉旧的 `.venv` 目录（里面有装了一半的包，留着会继续报同样的错）
+2. 重新拉一次代码，双击 `安装依赖.bat`
+
+如果脚本提示「检测到的 Python 是 3.14，太新了」，装一个 3.12 即可，
+装的时候勾上 `Add python.exe to PATH`，然后回到第 1 步。
+
+后面的 `No module named streamlit` 是同一件事的连带结果 —— 依赖没装成功，自然导不进来，
+不用单独修。

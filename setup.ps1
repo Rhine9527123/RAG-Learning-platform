@@ -22,16 +22,115 @@ function Show-ErrTail([int]$n) {
 
 Write-Host "==> 当前目录：$PSScriptRoot"
 
-if (Test-Path ".venv") {
-    Write-Host "==> 已存在 .venv，跳过创建（想重建就先删掉 .venv 目录）"
-} else {
-    Write-Host "==> 创建虚拟环境 .venv"
-    python -m venv .venv
-    if ($LASTEXITCODE -ne 0) { throw "创建虚拟环境失败：python -m venv 返回 $LASTEXITCODE" }
+# ---------------------------------------------------------------
+# 挑一个能用的 Python 解释器
+# ---------------------------------------------------------------
+# 为什么必须挑：onnxruntime 和 streamlit 都要求 >= 3.11；
+# 3.14 还没有对应的预编译轮子，pip 会报 No matching distribution。
+# 所以只在 3.11 / 3.12 / 3.13 里挑，优先 3.12（依赖轮子最全）。
+# 双系统上都装了 Python 时，PATH 里那个未必可用，用 py 启动器把所有版本列出来再挑。
+$MIN_VER = [version]"3.11"
+$MAX_VER = [version]"3.14"
+
+function Get-PyVersion([string]$exe) {
+    if (-not $exe) { return $null }
+    if (-not (Test-Path -LiteralPath $exe)) { return $null }
+    $out = & $exe -c "import sys;print('%d.%d.%d' % sys.version_info[:3])" 2>$null
+    if ($LASTEXITCODE -ne 0) { return $null }
+    $line = ($out | Select-Object -Last 1)
+    if (-not $line) { return $null }
+    try { return [version]$line.Trim() } catch { return $null }
 }
 
-$py = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
-if (-not (Test-Path $py)) { throw "虚拟环境创建失败，找不到 $py" }
+function Get-Rank([version]$v) {
+    if ($v.Major -ne 3) { return 9 }
+    switch ($v.Minor) {
+        12 { return 0 }
+        11 { return 1 }
+        13 { return 2 }
+        default { return 9 }
+    }
+}
+
+$cands = New-Object System.Collections.ArrayList
+$pathPy = Get-Command python.exe -ErrorAction SilentlyContinue
+if ($pathPy) { [void]$cands.Add($pathPy.Source) }
+if (Get-Command py.exe -ErrorAction SilentlyContinue) {
+    foreach ($line in (& py -0p 2>$null)) {
+        if ("$line" -match '([A-Za-z]:\\.*?python\.exe)') { [void]$cands.Add($matches[1]) }
+    }
+}
+
+$seen = @{}
+$found = @()
+foreach ($c in $cands) {
+    if (-not $c) { continue }
+    $key = "$c".ToLower()
+    if ($seen.ContainsKey($key)) { continue }
+    $seen[$key] = $true
+    $v = Get-PyVersion $c
+    if ($v) { $found += [pscustomobject]@{ Exe = $c; Ver = $v } }
+}
+
+if ($found.Count -gt 0) {
+    Write-Host "==> 本机检测到的 Python：" -ForegroundColor DarkGray
+    foreach ($f in ($found | Sort-Object Ver -Descending)) {
+        Write-Host ("    {0,-9} {1}" -f $f.Ver, $f.Exe) -ForegroundColor DarkGray
+    }
+}
+
+$usable = $found | Where-Object { $_.Ver -ge $MIN_VER -and $_.Ver -lt $MAX_VER }
+$pick = $usable | Sort-Object @{ Expression = { Get-Rank $_.Ver } }, @{ Expression = { $_.Ver }; Descending = $true } | Select-Object -First 1
+
+if (-not $pick) {
+    Write-Host ""
+    Write-Host "  [X] 没有找到可用的 Python 解释器（需要 3.11 / 3.12 / 3.13）" -ForegroundColor Red
+    $tooNew = $found | Where-Object { $_.Ver -ge $MAX_VER } | Sort-Object Ver -Descending | Select-Object -First 1
+    if ($tooNew) {
+        Write-Host ("      检测到的是 Python {0}，太新了：llama-index 那套依赖在 {1} 上还凑不齐" -f $tooNew.Ver, $tooNew.Ver) -ForegroundColor Red
+        Write-Host "      （3.13 已经可以，3.14 目前装不全）。" -ForegroundColor Red
+    } elseif ($found.Count -eq 0) {
+        Write-Host "      本机没装 Python，或者装了但没有加进 PATH。" -ForegroundColor Red
+    } else {
+        Write-Host "      检测到的 Python 都不在 3.11 ~ 3.13 之间，装不上依赖。" -ForegroundColor Red
+    }
+    Write-Host ""
+    Write-Host "      请装 3.12（3.11 也行），装完重跑本脚本：" -ForegroundColor Yellow
+    Write-Host "      https://www.python.org/downloads/release/python-3129/" -ForegroundColor Yellow
+    Write-Host "      安装时务必勾选 Add python.exe to PATH。" -ForegroundColor Yellow
+    Write-Host "      如果项目里已有 .venv 目录，先删掉它（旧环境版本不对，留着也不会成功）。" -ForegroundColor Yellow
+    Write-Host ""
+    exit 1
+}
+
+Write-Host ("==> 本次使用 Python {0}" -f $pick.Ver) -ForegroundColor Green
+Write-Host ("    {0}" -f $pick.Exe) -ForegroundColor DarkGray
+
+$venvDir = Join-Path $PSScriptRoot ".venv"
+$venvPy = Join-Path $venvDir "Scripts\python.exe"
+
+# 已有的 .venv 版本不对就删掉重建，否则后面装依赖必然失败
+if (Test-Path -LiteralPath $venvPy) {
+    $venvVer = Get-PyVersion $venvPy
+    $badVenv = (-not $venvVer) -or ($venvVer -lt $MIN_VER) -or ($venvVer -ge $MAX_VER)
+    if ($badVenv) {
+        Write-Host ("==> 现有 .venv 是 Python {0}，不在支持范围，删掉重建" -f $venvVer) -ForegroundColor Yellow
+        Remove-Item -LiteralPath $venvDir -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue
+    }
+}
+
+if (Test-Path -LiteralPath $venvPy) {
+    Write-Host "==> 复用已有 .venv（想重建就先删掉 .venv 目录）"
+} else {
+    Write-Host "==> 创建虚拟环境 .venv"
+    & $pick.Exe -m venv $venvDir
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $venvPy)) {
+        throw "创建虚拟环境失败：python -m venv 返回 $LASTEXITCODE"
+    }
+}
+
+$py = $venvPy
+if (-not (Test-Path -LiteralPath $py)) { throw "虚拟环境创建失败，找不到 $py" }
 
 # ---- 先确保 pip 可用 ----
 # uv 创建的 venv 默认不带 pip；Python 安装时也可能没有。
@@ -105,7 +204,7 @@ Write-Host "==> 依赖安装完成（$usedMirror）" -ForegroundColor Green
 # pip 返回 0 也可能有包没装全（中途中断过），只有导入成功才算能用。
 # 这一步直接对应报错「No module named streamlit」。
 Write-Host "==> 自检：导入关键依赖"
-& $py -c "import streamlit, llama_index.core, fastembed; print('deps ok')" 2>$errLog
+& $py -c "import streamlit, llama_index.core, fastembed, jieba; from core.local_embed import FastEmbedLocalEmbedding; print('deps ok')" 2>$errLog
 if ($LASTEXITCODE -ne 0) {
     Show-ErrTail 20
     Write-Host "==> 依赖导入失败，请重跑本脚本；仍失败就删掉 .venv 目录再来一次" -ForegroundColor Red
@@ -136,5 +235,5 @@ print('model ready')
 }
 
 Write-Host ""
-Write-Host "==> 全部就绪。启动前端：" -ForegroundColor Green
+Write-Host "==> 全部就绪（Python $($pick.Ver)）。启动前端：" -ForegroundColor Green
 Write-Host "    双击 启动.bat     或者执行 .\run.ps1" -ForegroundColor Green

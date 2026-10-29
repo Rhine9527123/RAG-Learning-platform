@@ -15,8 +15,8 @@ where python >nul 2>nul
 if errorlevel 1 (
     echo  [X] 没有检测到 Python
     echo.
-    echo      请先安装 Python 3.11 或更高版本：
-    echo      https://www.python.org/downloads/
+    echo      请先安装 Python 3.12（3.11 也行）：
+    echo      https://www.python.org/downloads/release/python-3129/
     echo.
     echo      安装时务必勾选 "Add Python to PATH"
     echo.

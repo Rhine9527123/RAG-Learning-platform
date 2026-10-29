@@ -13,8 +13,8 @@ where python >nul 2>nul
 if errorlevel 1 (
     echo  [X] 没有检测到 Python
     echo.
-    echo      请先安装 Python 3.11 或更高版本：
-    echo      https://www.python.org/downloads/
+    echo      请先安装 Python 3.12（3.11 也行）：
+    echo      https://www.python.org/downloads/release/python-3129/
     echo.
     echo      安装时务必勾选 "Add Python to PATH"
     echo.
@@ -22,13 +22,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python -c "import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)" >nul 2>nul
+python -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" >nul 2>nul
 if errorlevel 1 (
-    echo  [X] Python 版本过低，需要 3.10 或更高。
+    echo  [X] Python 版本过低：本项目依赖 onnxruntime，要求 3.11 或更高。
     echo.
     python --version
     echo.
-    echo      请升级到 3.11 或以上：https://www.python.org/downloads/
+    echo      请安装 3.12（3.11 也行）：
+    echo      https://www.python.org/downloads/release/python-3129/
     echo.
     pause
     exit /b 1

@@ -184,10 +184,13 @@ def build_local_embed_model(model_name: str):
         return _LOCAL_EMBED_CACHE[model_name]
 
     _prepare_hf_env()
-    from llama_index.embeddings.fastembed import FastEmbedEmbedding
+    # 注意：不要改成 llama_index.embeddings.fastembed。
+    # 那个包 0.7.0 只发布到 Python <3.13，在 3.13/3.14 上装不上，
+    # 所以本项目自己封装了一层，依赖只剩 fastembed。原因见 core/local_embed.py 文件头。
+    from core.local_embed import FastEmbedLocalEmbedding
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    _LOCAL_EMBED_CACHE[model_name] = FastEmbedEmbedding(
+    _LOCAL_EMBED_CACHE[model_name] = FastEmbedLocalEmbedding(
         model_name=model_name,
         cache_dir=str(MODEL_DIR),
         embed_batch_size=16,
