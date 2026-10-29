@@ -10,6 +10,22 @@
 
 ---
 
+## 📸 界面一览
+
+**流程编排**：整条 RAG 流水线是一张可拖拽的画布 —— 左侧模块库拖进来、连线决定数据流，「画布即配置」：
+
+![流程编排画布](docs/screenshots/flow-canvas.png)
+
+**侧栏 + 画布**：左侧是模型服务与语料管理（配好 Key 测试连接后可整体收起），右侧画布随时铺满全屏：
+
+![侧栏与画布](docs/screenshots/sidebar-and-canvas.png)
+
+**问答与对比**：提问后直接看到「你的答案 vs 标准答案」的逐要点判定与差异对照，上方是召回覆盖率 / 上下文纯度 / 答案接地率三个质量分：
+
+![问答与对比](docs/screenshots/qa-compare.png)
+
+---
+
 ## 🚀 三步开始用
 
 ### 1. 克隆仓库
@@ -210,6 +226,7 @@ ui/
   flow_component/      画布前端组件（index.html，纯 HTML/JS，无构建步骤）
 data/
   samples/             11 份内置语料（深信大校园指南）
+docs/screenshots/      README 用的界面截图
   models/              本地向量模型缓存（首次自动下载，可删）
   storage/             索引持久化（重建即可，可删）
 ```
